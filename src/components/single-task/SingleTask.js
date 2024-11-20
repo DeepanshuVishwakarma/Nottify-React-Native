@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import colors from "../../../styles/colors";
 import {
   View,
@@ -8,28 +8,95 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
-import TaskCategory from "../../ui/TaskOptions"; // Placeholder for your TaskCategory component
-import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Example for icons, install react-native-vector-icons
-
+import Dialog from "../../ui/Dailog";
+import AddUpdateTaskModal from "../../ui/AddUpdateTaskModal";
+import TaskCategory from "../../ui/TaskOptions";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useRoute } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { addTask, setDeletion } from "@/src/store/reducers/slice";
+import { useNavigation } from "@react-navigation/native";
+import Reminder from "../../components/reminder/index";
 export default function SingleTask() {
   const reminder = "Reminder";
   const category = "Category";
   const priority = "Priority";
 
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+
+  const route = useRoute();
+  const taskKey = route.params?.key;
+
+  const tasks = useSelector((state) => state.app.tasks);
+  const taskIndex = tasks.findIndex((task) => task.key === taskKey);
+  const taskData = taskIndex !== -1 ? tasks[taskIndex] : {};
+
+  // console.log(tasks);
+
   const [toggleModalFor, setToggleModalFor] = useState(null);
-  const [taskPriority, setTaskPriority] = useState("Low"); // Default priority
+  const [taskPriority, setTaskPriority] = useState(taskData?.priority || "Low"); // default priority
+  const [toggleDeleteDialog, setToggleDeleteDialog] = useState(false);
 
   const handleModalToggle = (modalFor) => {
     setToggleModalFor(modalFor);
   };
 
   const handlePriorityChange = (newPriority) => {
-    setTaskPriority(newPriority);
-    setToggleModalFor(null); // Close modal after selection
-    // Call a dispatch or any method to update the task with the new priority
-    // Example: dispatch(setTask({ ...task, priority: newPriority }));
+    setTaskPriority((prev) => newPriority);
+    setToggleModalFor(null);
+    dispatch(
+      addTask({
+        ...taskData,
+        priority: newPriority,
+      })
+    );
+  };
+  // useEffect(()=>{
+  //   if(taskData.priority !== taskPriority){
+  //     dis
+  //   }
+  // },[taskPriority])
+  const closeModal = () => {
+    setToggleModalFor(null);
   };
 
+  const handleDeletion = () => {
+    console.log("deleting the task ");
+    dispatch(setDeletion(taskData));
+    setToggleDeleteDialog(false);
+    navigation.navigate("Screen");
+  };
+  const handleDeleteClick = () => {
+    setToggleModalFor(null); // close any existing modal
+    setModalVisible(false);
+    setToggleDeleteDialog(true); // open delete dialog
+  };
+
+  const handleUpdateTask = (task) => {
+    if (task.title.trim() === "" || task.description.trim() === "") {
+      return;
+    }
+    const data = {
+      ...taskData,
+      title: task.title,
+      description: task.description,
+    };
+    dispatch(addTask(data));
+  };
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+  const handleEditTask = () => {
+    setToggleModalFor(null); // close any other modal
+    setToggleDeleteDialog(false);
+
+    setModalVisible(true); // open update model
+  };
+
+  console.log("task data is updated", taskData);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
@@ -37,8 +104,8 @@ export default function SingleTask() {
           <Icon name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity> */}
         <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Do Math Homework</Text>
-          <Text style={styles.subtitle}>Do chapter 2 to 5 for next week</Text>
+          <Text style={styles.title}>{taskData?.title}</Text>
+          <Text style={styles.subtitle}>{taskData?.description}</Text>
         </View>
         {/* <TouchableOpacity style={styles.iconButton}>
           <Icon name="pencil" size={24} color="#fff" />
@@ -64,7 +131,11 @@ export default function SingleTask() {
             style={styles.infoButton}
             onPress={() => handleModalToggle(category)}
           >
-            <Text style={styles.infoButtonText}>University</Text>
+            <Text style={styles.infoButtonText}>
+              {taskData && taskData.category
+                ? taskData.category
+                : "Set Category"}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -80,12 +151,12 @@ export default function SingleTask() {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.deleteButton}>
+      <TouchableOpacity onPress={handleDeleteClick} style={styles.deleteButton}>
         <Icon name="delete-outline" size={24} color="red" />
         <Text style={styles.deleteText}>Delete Task</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.editTaskButton}>
+      <TouchableOpacity onPress={handleEditTask} style={styles.editTaskButton}>
         <Text style={styles.editTaskText}>Edit Task</Text>
       </TouchableOpacity>
 
@@ -107,7 +178,10 @@ export default function SingleTask() {
           )}
           {toggleModalFor === category && (
             <View style={styles.modalContent}>
-              <TaskCategory />
+              <TaskCategory taskData={taskData} closeModal={closeModal} />
+
+              {/* extra close button inside the modal content */}
+
               <TouchableOpacity onPress={() => setToggleModalFor(null)}>
                 <Text style={styles.closeModalText}>Close</Text>
               </TouchableOpacity>
@@ -150,6 +224,28 @@ export default function SingleTask() {
           )}
         </View>
       </Modal>
+      <Reminder taskdata={taskData}></Reminder>
+
+      <Dialog
+        isVisible={toggleDeleteDialog}
+        title="Are you sure you want to delete this task?"
+        okayButtonText="Delete"
+        cancelButtonText="Cancel"
+        onClickOkay={handleDeletion}
+        onClickCancel={() => setToggleDeleteDialog(false)}
+      >
+        <Text style={{ color: "white", textAlign: "center" }}>
+          "{taskData.description}"
+        </Text>
+      </Dialog>
+
+      <AddUpdateTaskModal
+        isVisible={isModalVisible}
+        isUpdating={true}
+        taskData={taskData}
+        onClickClose={toggleModal}
+        onClickSubmit={handleUpdateTask}
+      />
     </ScrollView>
   );
 }

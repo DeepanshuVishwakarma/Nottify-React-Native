@@ -5,12 +5,13 @@ import colors from "../../../styles/colors";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import CheckIcon from "react-native-vector-icons/Entypo";
 import CancelIcon from "react-native-vector-icons/MaterialIcons";
+import IconCheck from "react-native-vector-icons/Feather";
 import TagIcon from "react-native-vector-icons/AntDesign";
 import { Modal } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { setDeletion, setTasks } from "../../store/reducers/slice";
+import { setDeletion, addTask } from "../../store/reducers/slice";
 import { useNavigation } from "@react-navigation/native";
-
+import Dialog from "../../ui/Dailog";
 export default function Task({ taskdata }) {
   const navigation = useNavigation();
   const [isActive, setActive] = useState(false);
@@ -35,11 +36,12 @@ export default function Task({ taskdata }) {
   };
   const handleCompletion = () => {
     const updatedTask = { ...taskdata, status: "completed" };
-    dispatch(setTasks(updatedTask)); // Dispatch the updated task directly
+    dispatch(addTask(updatedTask)); // Dispatch the updated task directly
   };
 
   const openSingleTask = () => {
-    navigation.navigate("SingleTask", { taskdata: taskdata });
+    const keyForCurentTask = taskdata.key;
+    navigation.navigate("SingleTask", { key: keyForCurentTask });
   };
   console.log(taskdata, "data from task component ");
   return (
@@ -56,20 +58,24 @@ export default function Task({ taskdata }) {
           </View>
         </TouchableOpacity>
         <View style={styles.descriptionCon}>
-          <View style={styles.dateCon}>
+          {/* <View style={styles.dateCon}>
             <Text style={styles.date}>{taskdata.date}</Text>
-          </View>
+          </View> */}
           <View style={styles.icons}>
-            <TouchableOpacity style={styles.tag}>
-              <TagIcon name="tagso" size={30} color={colors.border} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.reminder}>
+            {taskdata?.category ? (
+              <View style={styles.title}>{taskdata.category}</View>
+            ) : (
+              <TouchableOpacity style={styles.tag}>
+                <TagIcon name="tagso" size={30} color={colors.border} />
+              </TouchableOpacity>
+            )}
+            {/* <TouchableOpacity style={styles.reminder}>
               {!isActive ? (
                 <Icon name="alarm" size={30} color={colors.border} />
               ) : (
                 <Icon name="alarm-on" size={30} color={colors.border} />
               )}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <View style={styles.buttons}>
             <View style={styles.buttonRow}>
@@ -77,7 +83,17 @@ export default function Task({ taskdata }) {
                 style={styles.doneBox}
                 onPress={handleCompletion}
               >
-                <CheckIcon name="check" color={colors.border} size={30} />
+                <IconCheck
+                  name={
+                    taskdata.status === "completed" ? "check-circle" : "check"
+                  }
+                  color={
+                    taskdata.status === "completed"
+                      ? colors.pColor
+                      : colors.border
+                  }
+                  size={30}
+                />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleModal} style={styles.cancelBox}>
                 <CancelIcon name="cancel" style={styles.cancel} size={30} />
@@ -86,7 +102,7 @@ export default function Task({ taskdata }) {
           </View>
         </View>
       </View>
-      <Modal
+      {/* <Modal
         animationType="fade"
         transparent={true}
         visible={isModalVisible}
@@ -116,7 +132,20 @@ export default function Task({ taskdata }) {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
+
+      <Dialog
+        isVisible={isModalVisible}
+        title="Are you sure you want to delete this task?"
+        okayButtonText="Delete"
+        cancelButtonText="Cancel"
+        onClickOkay={handleDeletion}
+        onClickCancel={() => setModalVisible(false)}
+      >
+        <Text style={{ color: "white", textAlign: "center" }}>
+          "{taskdata.title}"
+        </Text>
+      </Dialog>
     </View>
   );
 }

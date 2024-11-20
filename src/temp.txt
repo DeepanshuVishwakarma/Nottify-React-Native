@@ -1,0 +1,396 @@
+
+
+
+if i press on buttoin task for ,
+then a modal will appear and it will show 5 optinos
+daily , weekly , monthly yearly and chooose date
+
+if , daily then open time ,
+if weekley then open 7 days in a modal and then opne time
+if monthly then open date and then time
+if yearly then open date and then time ,
+if choose date , then open date and then time
+    
+in that reminder system ,
+what owuld be the best way to this kind of system ?
+since i want to show values once after another
+
+i want it to be reusable , cuz i will also use this somwhere else
+like when i am filttering my task ,
+then i don't want to opne date and time
+
+i will just open first modal ,
+daily , weekly .... choose day ,
+and also if i want to filter task day wise then i want to show only
+sunday monday ... saturday
+
+
+import React, { useEffect, useState } from "react";
+import { TouchableOpacity, View, Modal, Text, TextInput } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
+import { addTask } from "@/src/store/reducers/slice";
+import colors from "../../../styles/colors";
+import { frequency } from "../../utils/constant";
+import CustomDatePicker from "../../ui/dateandtime/DatePicker";
+import TimeSelector from "../../ui/dateandtime/TimeSelector";
+const DateTimeSelector = ({
+  isVisible,
+  onSelect,
+  onClose,
+  mode,
+  dd,
+  mm,
+  yy,
+}) => {
+  console.log("inside dateand time selector");
+  if (!isVisible) return;
+  const [value, setValue] = useState(
+    mode === "time" ? new Date().getTime() : new Date()
+  );
+
+  const handleSubmit = () => {
+    onSelect(value);
+    onClose();
+  };
+
+  const handleChange = (event, selectedDate) => {
+    setValue(selectedDate);
+  };
+
+  const getDisabledParts = () => {
+    const disabled = {};
+    if (mode === "time") {
+      disabled.date = true;
+      disabled.month = true;
+      disabled.year = true;
+    } else {
+      if (!dd) disabled.date = true;
+      if (!mm) disabled.month = true;
+      if (!yy) disabled.year = true;
+    }
+    return disabled;
+  };
+
+  const disabledParts = getDisabledParts();
+  const [date, setDate] = useState(new Date());
+  const handleConfirm = (selectedDate) => {
+    console.log("Selected Date:", selectedDate);
+  };
+  return (
+    <CustomDatePicker
+      value={date}
+      onChange={setDate}
+      disabled={getDisabledParts()}
+      // disabled={{
+      //   date: true,
+
+      //   month: true,
+      //   year: true,
+      // }}
+      positiveButton={{ label: "OK", textColor: "#007bff" }}
+      onConfirm={handleConfirm}
+    />
+  );
+};
+
+const DaySelector = ({ onSelect, onClose, isVisible }) => {
+  console.log("dayselecorealsdjfalsdfj", isVisible);
+  if (!isVisible) return;
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      {days.map((day) => (
+        <TouchableOpacity
+          key={day}
+          onPress={() => {
+            onSelect(day);
+            onClose();
+          }}
+        >
+          <Text>{day}</Text>
+        </TouchableOpacity>
+      ))}
+      <TouchableOpacity onPress={onClose}>
+        <Text>Close</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const FrequencySelector = ({ onSelect, isVisible, onSelectClose }) => {
+  // ... other component code
+
+  if (!isVisible) return;
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      {Object.keys(frequency).map((key) => (
+        <TouchableOpacity
+          key={key}
+          onPress={() => {
+            onSelect(frequency[key]);
+            // onSelectClose();
+          }}
+        >
+          <Text>{frequency[key]}</Text>
+        </TouchableOpacity>
+      ))}
+      {/* <TouchableOpacity onPress={onSelectClose}>
+          <Text>Close</Text>
+        </TouchableOpacity> */}
+    </View>
+  );
+};
+
+const RemindBefore = ({ onSelect, onClose, taskfordate }) => {
+  if (!isVisible) return;
+
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [error, setError] = useState(null);
+
+  const taskDate = new Date(taskfordate);
+  const now = new Date();
+  const diffTime = Math.abs(taskDate - now);
+  const maxDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const maxHours = Math.floor(
+    (diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+  const maxMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+
+  const handleSubmit = () => {
+    if (!error) {
+      onSelect({ days, hours, minutes });
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    if (days > maxDays || hours > maxHours || minutes > maxMinutes) {
+      setError("Time exceeds remaining time");
+    } else if (days < 0 || hours < 0 || minutes < 0) {
+      setError("Invalid time");
+    } else {
+      setError(null);
+    }
+  }, [days, hours, minutes, maxDays, maxHours, maxMinutes]);
+
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <TextInput
+        placeholder="Days"
+        keyboardType="numeric"
+        value={String(days)}
+        onChangeText={(text) => setDays(Number(text))}
+        editable={maxDays > 0}
+      />
+      <TextInput
+        placeholder="Hours"
+        keyboardType="numeric"
+        value={String(hours)}
+        onChangeText={(text) => setHours(Number(text))}
+        editable={maxHours > 0 || maxDays > 0}
+      />
+      <TextInput
+        placeholder="Minutes"
+        keyboardType="numeric"
+        value={String(minutes)}
+        onChangeText={(text) => setMinutes(Number(text))}
+        editable={maxMinutes > 0 || maxHours > 0 || maxDays > 0}
+      />
+      {error && <Text style={{ color: "red" }}>{error}</Text>}
+      <TouchableOpacity onPress={handleSubmit} disabled={!!error}>
+        <Text>Set Before</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onClose}>
+        <Text>Close</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const Reminder = ({ taskdata }) => {
+  const dispatch = useDispatch();
+
+  const [toggleModal, setToggleModal] = useState(false);
+  const [reminder, setReminder] = useState({
+    reason: "",
+    repeat: 0,
+    frequency: null,
+    time: null,
+    weekday: null,
+    date: null,
+    before: {
+      days: null,
+      hours: null,
+      minutes: null,
+    },
+  });
+
+  const updateReminderInTheTask = () => {
+    dispatch(
+      addTask({
+        ...taskdata,
+        reminder: reminder,
+      })
+    );
+  };
+  useEffect(() => {
+    updateReminderInTheTask();
+  }, [reminder]);
+
+  const handleFrequency = (frequency) => {
+    setReminder({ ...reminder, frequency });
+  };
+
+  const handleTime = (time) => {
+    setReminder({ ...reminder, time });
+  };
+
+  const handleDate = (dateInfo) => {
+    setReminder({ ...reminder, date: dateInfo });
+  };
+
+  const handleWeekday = (weekday) => {
+    setReminder({ ...reminder, weekday });
+  };
+  const handleReminderBefore = ({ days, hours, minutes }) => {
+    // before = { days : days, hours : hours, minutes },
+    const temp_reminder = {
+      ...reminder,
+      before: {
+        days,
+        hours,
+        minutes,
+      },
+    };
+    setReminder({ ...temp_reminder });
+  };
+  return (
+    <View>
+      <TouchableOpacity onPress={() => setToggleModal(true)}>
+        <Text>Task For</Text>
+      </TouchableOpacity>
+
+      <Modal visible={toggleModal}>
+        {/* when u have clicked on task for */}
+
+        <FrequencySelector
+          onSelect={handleFrequency}
+          isVisible={true}
+          onSelectClose={() => setToggleModal(false)}
+        />
+
+        {/* when u have clicked on task for and selected option daily  now select the time  */}
+
+        {reminder?.frequency == frequency.daily && (
+          <TimeSelector
+            value={reminder?.time}
+            onSelect={handleTime}
+            isUpdating={false}
+            isVisible={true}
+          />
+        )}
+
+        {/* whne u selected weekly as ur frequency */}
+
+        <DaySelector
+          onSelect={handleWeekday}
+          // onClose={() => setOpenModalFor(null)}
+          isVisible={toggleModal && reminder.frequency == frequency.weekly}
+        />
+        <TimeSelector
+          value={reminder?.time}
+          onSelect={handleTime}
+          isUpdating={false}
+          isVisible={reminder.frequency == frequency.weekly && toggleModal}
+        />
+
+        <DateTimeSelector
+          onSelect={handleDate}
+          // onClose={() => setOpenModalFor(null)}
+          mode="date"
+          dd={true}
+          mm={false}
+          yy={false}
+          isVisible={reminder?.frequency == frequency.monthly && toggleModal}
+        />
+
+        <DateTimeSelector
+          onSelect={handleDate}
+          // onClose={() => setOpenModalFor(null)}
+          dd={true}
+          mm={true}
+          yy={false}
+          isVisible={reminder?.frequency == frequency.yearly && toggleModal}
+        />
+
+        <TouchableOpacity
+          onPress={() => {
+            setToggleModal(false);
+          }}
+        >
+          <Text>Close</Text>
+        </TouchableOpacity>
+      </Modal>
+
+      <TouchableOpacity onPress={() => setToggleModal(true)}>
+        <Text> Reminder Before</Text>
+      </TouchableOpacity>
+
+      {/* {openModalFor === "before" && (
+        <RemindBefore
+          onSelect={(before) => {
+            setReminder({ ...reminder, before });
+            setOpenModalFor(null);
+          }}
+          onClose={() => setOpenModalFor(null)}
+          taskfordate={reminder.date || new Date()}
+        />
+      )} */}
+    </View>
+  );
+};
+
+export default Reminder;
+
+
+
+ useEffect(() => {
+    if (toggleModal) {
+      if (
+        reminder.frequency === frequency.daily ||
+        (reminder.frequency === frequency.weekly && reminder?.weekday)
+      ) {
+        setToggleTimeSelector(true);
+      } else {
+        setToggleTimeSelector(false);
+      }
+
+      if (reminder.frequency === frequency.weekly) {
+        setToggleWeekDay(true);
+      } else {
+        setToggleWeekDay(false);
+      }
+
+      if (
+        [frequency.date, frequency.monthly, frequency.yearly].includes(
+          reminder.frequency
+        )
+      ) {
+        setToggleDateSelector(true);
+      } else {
+        setToggleDateSelector(false);
+      }
+    }
+  }, [reminder]);

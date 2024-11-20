@@ -47,7 +47,7 @@ import {
   Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // You can use other icon libraries as well
-import { setTasks } from "../store/reducers/slice";
+import { addTask } from "../store/reducers/slice";
 import { useDispatch } from "react-redux";
 
 // List of Categories
@@ -114,20 +114,35 @@ const taskCategories = [
   },
 ];
 
-export default function TaskCategory({ closeModal }) {
+export default function TaskCategory({ taskData, closeModal }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const dispatch = useDispatch();
+
   const handleCategorySelect = (category) => {
     setSelectedCategory(() => category);
 
-    const taskData = {
-      ...setTasks,
-      category: category,
+    /*
+    strcuture of category object 
+      
+    const category = {
+        iconColor: "#222",
+        taskBg: "#f472b6",
+        taskFor: "Social",
+        taskIcon: "bullhorn-outline"
+      }
+    };
+    */
+
+    const taskFor = category.taskFor;
+
+    const updatedTaskData = {
+      ...taskData,
+      category: taskFor,
     };
 
-    dispatch(setTasks(taskData));
+    dispatch(addTask(updatedTaskData));
 
-    closeModal();
+    closeModal && closeModal();
   };
 
   return (
@@ -153,12 +168,14 @@ export default function TaskCategory({ closeModal }) {
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity
+        {/* extra close button inside the modal content */}
+
+        {/* <TouchableOpacity
           style={styles.closeButton}
           onPress={() => closeModal()}
         >
           <Text style={styles.closeButtonText}>Close</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
