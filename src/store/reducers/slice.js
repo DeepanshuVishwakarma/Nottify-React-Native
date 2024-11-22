@@ -5,11 +5,22 @@ const initialState = {
   tasks: [],
   days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
   frequency: ["Daily", "Weekly", "Monthly", "Yearly", "Select Date"],
+  filters: {
+    priorityFilters: [], // ["Low"  , "Medium" , "High" ]
+    frequencyFilters: [], // [ "Daily" , "Weekly" , "Monthly" , "Yearly" , "Select Date" ]
+    statusFilters: [], // ["completed", "unfinished"]
+    categoryFilters: [], // [Grocery
+
+    datesFilters: [],
+  },
 };
 const appSlice = createSlice({
   name: "app",
   initialState,
   reducers: {
+    setFilter: (state, action) => {
+      state.filters = action.payload;
+    },
     setSlide: (state, action) => {
       state.slide = action.payload;
     },
@@ -36,5 +47,6 @@ const appSlice = createSlice({
   },
 });
 
-export const { setSlide, addTask, setDeletion, deleteTask } = appSlice.actions;
+export const { setFilter, setSlide, addTask, setDeletion, deleteTask } =
+  appSlice.actions;
 export default appSlice.reducer;

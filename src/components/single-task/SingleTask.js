@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addTask, setDeletion } from "@/src/store/reducers/slice";
 import { useNavigation } from "@react-navigation/native";
 import Reminder from "../../components/reminder/index";
+import { priorities } from "@/src/utils/constant";
 export default function SingleTask() {
   const reminder = "Reminder";
   const category = "Category";
@@ -35,7 +36,9 @@ export default function SingleTask() {
   // console.log(tasks);
 
   const [toggleModalFor, setToggleModalFor] = useState(null);
-  const [taskPriority, setTaskPriority] = useState(taskData?.priority || "Low"); // default priority
+  const [taskPriority, setTaskPriority] = useState(
+    taskData?.priority || priorities.low
+  ); // default priority
   const [toggleDeleteDialog, setToggleDeleteDialog] = useState(false);
 
   const handleModalToggle = (modalFor) => {
@@ -191,31 +194,31 @@ export default function SingleTask() {
             <View style={styles.modalContent}>
               <Text>Select Task Priority</Text>
               <TouchableOpacity
-                onPress={() => handlePriorityChange("Low")}
+                onPress={() => handlePriorityChange(priorities.low)}
                 style={[
                   styles.priorityButton,
-                  taskPriority === "Low" && styles.selectedPriority,
+                  taskPriority === priorities.low && styles.selectedPriority,
                 ]}
               >
-                <Text>Low</Text>
+                <Text>{priorities.low}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => handlePriorityChange("Medium")}
+                onPress={() => handlePriorityChange(priorities.mid)}
                 style={[
                   styles.priorityButton,
-                  taskPriority === "Medium" && styles.selectedPriority,
+                  taskPriority === priorities.mid && styles.selectedPriority,
                 ]}
               >
-                <Text>Medium</Text>
+                <Text>{priorities.mid}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => handlePriorityChange("High")}
+                onPress={() => handlePriorityChange(priorities.high)}
                 style={[
                   styles.priorityButton,
-                  taskPriority === "High" && styles.selectedPriority,
+                  taskPriority === priorities.high && styles.selectedPriority,
                 ]}
               >
-                <Text>High</Text>
+                <Text>{priorities.high}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setToggleModalFor(null)}>
                 <Text style={styles.closeModalText}>Close</Text>

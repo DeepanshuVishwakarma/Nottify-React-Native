@@ -49,70 +49,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // You can use other icon libraries as well
 import { addTask } from "../store/reducers/slice";
 import { useDispatch } from "react-redux";
-
-// List of Categories
-const taskCategories = [
-  {
-    taskFor: "Grocery",
-    taskBg: "#a3e635",
-    taskIcon: "bread-slice-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Work",
-    taskBg: "#f87171",
-    taskIcon: "briefcase-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Sport",
-    taskBg: "#67e8f9",
-    taskIcon: "dumbbell",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Design",
-    taskBg: "#4ade80",
-    taskIcon: "palette-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "University",
-    taskBg: "#60a5fa",
-    taskIcon: "school-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Social",
-    taskBg: "#f472b6",
-    taskIcon: "bullhorn-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Music",
-    taskBg: "#e879f9",
-    taskIcon: "music-note-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Health",
-    taskBg: "#34d399",
-    taskIcon: "heart-outline",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Movie",
-    taskBg: "#38bdf8",
-    taskIcon: "filmstrip",
-    iconColor: "#222",
-  },
-  {
-    taskFor: "Home",
-    taskBg: "#fbbf24",
-    taskIcon: "home-outline",
-    iconColor: "#222",
-  },
-];
+import { taskCategories } from "../utils/constant";
 
 export default function TaskCategory({ taskData, closeModal }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
